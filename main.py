@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from game import play_minesweeper
+from game import play_minesweeper, search_game_field
 
 def start_move(event):
     root.x = event.x
@@ -17,7 +17,7 @@ def close_window():
     root.destroy()
 
 def start_bot():
-    play_minesweeper(root)
+    play_minesweeper()
 
 # Створюємо головне вікно
 root = tk.Tk()

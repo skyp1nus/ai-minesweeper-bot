@@ -4,7 +4,7 @@ import pyautogui
 
 ### Розділення зображення на окремі клітинки
 
-def split_image_into_cells(image, rows, cols, cell_width=76, cell_height=44):
+def split_image_into_cells(image, rows, cols, cell_width=74, cell_height=49):
     cells = []
     for row in range(rows):
         row_cells = []
@@ -14,13 +14,10 @@ def split_image_into_cells(image, rows, cols, cell_width=76, cell_height=44):
             right = left + cell_width
             lower = upper + cell_height
             cell = image.crop((left, upper, right, lower))
-            cell.save(f'cell{row}-{col}.png')
+            # cell.save(f'temp/cell{row}-{col}.png')
             row_cells.append(cell)
         cells.append(row_cells)
     return cells
-
-
-
 
 ### Порівняння кожної клітинки з еталонними зображеннями
 
@@ -94,21 +91,23 @@ def click_cell(x, y, cell_width, cell_height, top_left_x, top_left_y):
     cell_y = top_left_y + y * cell_height + cell_height // 2
     pyautogui.click(cell_x, cell_y)
 
+### Пошук ігрового поля
+
 def search_game_field():
     # Вказуємо шлях до шаблону зображення ігрового поля
     game_field_image = 'templates/Maps/game_field_template.png'
 
     try:
-        locations = list(pyautogui.locateAllOnScreen(game_field_image, confidence=0.9))
+        locations = list(pyautogui.locateAllOnScreen(game_field_image, confidence=0.7))
         if locations:
             print(f"Знайдено {len(locations)} збігів.")
             location = locations[0]
             # Розпаковуємо координати та розміри
             x, y, width, height = location
-            screenshot = pyautogui.screenshot(region=(int(x), int(y), int(width), int(height)))
-            return screenshot
-            # screenshot.save('game_field_screenshot.png')
+            screenshot = pyautogui.screenshot(region=(int(x+10), int(y+160), int(446), int(444)))
+            screenshot.save('game_field_screenshot.png')
             # print("Скріншот ігрового поля збережено як 'game_field_screenshot.png'")
+            return screenshot
         else:
             print("Ігрове поле не знайдено на екрані.")
     except pyautogui.ImageNotFoundException:
@@ -119,32 +118,28 @@ def search_game_field():
 
 ### Основна функція
 
-def play_minesweeper(root):
+def play_minesweeper():
 
     print("Start Bot...");
-
-    root.update_idletasks()
-    x = root.winfo_rootx()
-    y = root.winfo_rooty()
-    w = root.winfo_width()
-    h = root.winfo_height()
 
     rows = 9
     cols = 6
 
     # Захоплюємо знімок екрану
-    # screenshot =
-    search_game_field()
+    screenshot = search_game_field()
 
-    # # Завантажуємо еталонні зображення
-    # templates = load_templates('templates')
-    #
-    #
-    # # Розбиваємо зображення на клітинки
-    # cells = split_image_into_cells(screenshot, rows, cols)
-    #
-    # # Отримуємо стан ігрового поля
-    # game_state = get_game_state(cells, templates)
+    # Розбиваємо зображення на клітинки
+    cells = split_image_into_cells(screenshot, rows, cols)
+
+    # Завантажуємо еталонні зображення
+    templates = load_templates('templates/Objects')
+
+    # Отримуємо стан ігрового поля
+    game_state = get_game_state(cells, templates)
+
+    for row in game_state:
+        print("\t".join(str(element) if element is not None else "None" for element in row))
+
     #
     # # Знаходимо безпечні клітинки для натискання
     # safe_cells = find_safe_cells(game_state)
